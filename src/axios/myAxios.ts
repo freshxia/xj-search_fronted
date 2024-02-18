@@ -2,7 +2,7 @@ import axios from "axios";
 
 const myAxios = axios.create({
   baseURL: "http://localhost:8101/api/",
-  timeout: 1000,
+  timeout: 3000,
   // headers: { "X-Custom-Header": "foobar" },
 });
 // 添加请求拦截器

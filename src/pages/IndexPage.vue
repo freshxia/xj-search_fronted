@@ -19,7 +19,7 @@
         <PostItem :post-list="postList" />
       </a-tab-pane>
       <a-tab-pane key="picture" tab="图片">
-        <PictureItem />
+        <PictureItem :picture-list="pictureList" />
       </a-tab-pane>
       <a-tab-pane key="user" tab="用户">
         <UserItem :user-list="userList" />
@@ -28,39 +28,115 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref, watchEffect } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import myAxios from "@/axios/myAxios";
 import PostItem from "@/views/PostItem.vue";
 import PictureItem from "@/views/PictureItem.vue";
 import UserItem from "@/views/UserItem.vue";
+import { message } from "ant-design-vue";
 const router = useRouter();
-// 搜索框 输入的值
-const searchText = ref("");
+const route = useRoute();
 // tab栏 的key
-const activeKey = ref("post");
-const postList = ref({});
-const userList = ref();
+const activeKey = ref(route.params.category);
+const postList = ref([]);
+const userList = ref([]);
+const pictureList = ref([]);
+const searchText = ref(route.query.text || "");
 
-// 点击搜索时触发
-const onSearch = (searchText: string) => {
-  myAxios.post("/post/list/page/vo", {}).then((res) => {
-    if (res) {
-      postList.value = res.data?.records;
-    }
-    console.log(postList.value);
-  });
+// 初始化搜索参数
+const initSearchParams = {
+  text: "",
+  category: activeKey,
+};
 
-  myAxios.post("/user/list/page/vo", {}).then((res) => {
+const loadData = (params: any) => {
+  const { category = "post" } = params;
+  if (!category) {
+    message.warning("请求的类别不能为空");
+    return;
+  }
+  const query = {
+    ...params,
+    searchText: params.text,
+    category: category,
+  };
+  myAxios.post("/search/vo", query).then((res) => {
     if (res) {
-      userList.value = res.data?.records;
+      if (category === "post") {
+        postList.value = res.data.postList;
+      } else if (category === "user") {
+        userList.value = res.data.userList;
+      } else if (category === "picture") {
+        pictureList.value = res.data.pictureList;
+      }
     }
-    console.log(userList.value);
   });
 };
+const searchParams = ref(initSearchParams);
+//当路由发生变化时触发搜索
+watchEffect(() => {
+  // 直接根据路由跳转到对应的tab
+  if (router.currentRoute.value.path === "/post") {
+    activeKey.value = "post";
+  } else if (router.currentRoute.value.path === "/user") {
+    activeKey.value = "user";
+  } else if (router.currentRoute.value.path === "/picture") {
+    activeKey.value = "picture";
+  }
+  //当路由参数发生变化时触发搜索
+  searchParams.value = {
+    ...initSearchParams,
+    text: route.query.text,
+    category: route.params.category,
+  } as any;
+  loadData(searchParams.value);
+});
+
+const loadDataOld = () => {
+  myAxios
+    .post("/search/vo", { category: "post", searchText: searchText })
+    .then((res) => {
+      if (res) {
+        postList.value = res.data.postList;
+      }
+      console.log(postList.value);
+    });
+  myAxios
+    .post("/search/vo", { category: "user", searchText: searchText })
+    .then((res) => {
+      if (res) {
+        userList.value = res.data.userList;
+      }
+      console.log(userList.value);
+    });
+  myAxios
+    .post("/search/vo", { category: "picture", searchText: searchText })
+    .then((res) => {
+      if (res) {
+        pictureList.value = res.data.pictureList;
+      }
+      console.log(pictureList.value);
+    });
+};
+// 点击搜索时触发
+const onSearch = (value: string) => {
+  router.push({
+    query: {
+      // ...searchParams.value,
+      text: value,
+    },
+  });
+};
+
 // tab栏切换时触发
-const onTabChange = (type: string) => {
-  console.log(type);
+const onTabChange = (key: string) => {
+  router.push({
+    path: `/${key}`,
+    query: {
+      text: route.query.text,
+    },
+  });
 };
 </script>
 <style scoped>

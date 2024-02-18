@@ -4,19 +4,26 @@ import {
   LikeOutlined,
   MessageOutlined,
 } from "@ant-design/icons-vue";
-const listData: Record<string, string>[] = [];
-
-for (let i = 0; i < 23; i++) {
-  listData.push({
-    href: "https://www.antdv.com/",
-    title: `ant design vue part ${i}`,
-    avatar: "https://api.btstu.cn/sjtx/api.php?lx=c1&format=images",
-    description:
-      "Ant Design, a design language for background applications, is refined by Ant UED Team.",
-    content:
-      "We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.",
-  });
+import { ref } from "vue";
+import Post from "@/model/Post";
+import { withDefaults, defineProps } from "vue";
+const listData = ref([]);
+interface Props {
+  postList: Post[];
 }
+const props = withDefaults(defineProps<Props>(), {
+  postList: () => [],
+});
+
+// listData.push({
+//   href: "https://www.antdv.com/",
+//   title: `ant design vue part ${i}`,
+//   avatar: "https://api.btstu.cn/sjtx/api.php?lx=c1&format=images",
+//   description:
+//     "Ant Design, a design language for background applications, is refined by Ant UED Team.",
+//   content:
+//     "We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.",
+// });
 
 const pagination = {
   onChange: (page: number) => {
@@ -36,7 +43,7 @@ const actions: Record<string, any>[] = [
     item-layout="vertical"
     size="large"
     :pagination="pagination"
-    :data-source="listData"
+    :data-source="props.postList"
   >
     <template #footer>
       <div>
@@ -56,14 +63,14 @@ const actions: Record<string, any>[] = [
           <img
             width="272"
             alt="logo"
-            src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
+            src="https://api.btstu.cn/sjtx/api.php?lx=c1&format=images"
           />
         </template>
-        <a-list-item-meta :description="item.description">
-          <template #title>
-            <a :href="item.href">{{ item.title }}</a>
-          </template>
-          <template #avatar><a-avatar :src="item.avatar" /></template>
+        <a-list-item-meta :description="item.title">
+          <!--          <template #title>-->
+          <!--            <a :href="item.href">{{ item.title }}</a>-->
+          <!--          </template>-->
+          <!--          <template #avatar><a-avatar :src="item.avatar" /></template>-->
         </a-list-item-meta>
         {{ item.content }}
       </a-list-item>

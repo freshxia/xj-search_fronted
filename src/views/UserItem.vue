@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 </script>
 <template>
-  <a-list :grid="{ gutter: 16, column: 4 }" :data-source="userList">
+  <a-list :grid="{ gutter: 16, column: 4 }" :data-source="props.userList">
     <template #renderItem="{ item }">
       <img :src="item.userAvatar" alt="example" />
       <a-list-item>
